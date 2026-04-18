@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>技術士一次試験 建設部門 過去問演習</title>
+<style>
+:root {
+  --primary: #1a56a0;
+  --primary-dark: #0e3a72;
+  --primary-light: #e8f0fa;
+  --accent: #e67e22;
+  --success: #27ae60;
+  --error: #e74c3c;
+  --gray: #6c757d;
+  --light: #f8f9fa;
+  --border: #dee2e6;
+  --text: #212529;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif; background: #eef2f7; color: var(--text); min-height: 100vh; }
+
+/* ヘッダー */
+.header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 14px 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.header h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.02em; }
+.header p { font-size: 0.75rem; opacity: 0.85; margin-top: 2px; }
+
+/* タブナビゲーション */
+.tabs { display: flex; background: white; border-bottom: 2px solid var(--border); position: sticky; top: 62px; z-index: 99; }
+.tab-btn { flex: 1; padding: 11px 4px; font-size: 0.8rem; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-btn:hover { background: var(--primary-light); }
+
+/* メインコンテンツ */
+.main { max-width: 720px; margin: 0 auto; padding: 12px; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* フィルターセクション */
+.filter-section { background: white; border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.filter-title { font-size: 0.8rem; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; border: 2px solid transparent; cursor: pointer; transition: all 0.15s; background: var(--light); color: var(--gray); border-color: var(--border); user-select: none; }
+.chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+.chip:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+.chip.year-R7 { --yc: #8e44ad; }
+.chip.year-R6 { --yc: #2980b9; }
+.chip.year-R5 { --yc: #27ae60; }
+.chip.year-R4 { --yc: #d35400; }
+.chip.year-R3 { --yc: #c0392b; }
+.chip.year-chip.active { background: var(--yc); border-color: var(--yc); }
+.chip.year-chip:hover:not(.active) { color: var(--yc); border-color: var(--yc); }
+
+/* 統計カード */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.stat-card { background: white; border-radius: var(--radius); padding: 12px 8px; text-align: center; box-shadow: var(--shadow); }
+.stat-num { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+.stat-label { font-size: 0.72rem; color: var(--gray); margin-top: 2px; }
+
+/* 問題リスト */
+.q-list { display: flex; flex-direction: column; gap: 8px; }
+.q-card { background: white; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+.q-card:hover { border-color: var(--primary); }
+.q-card.correct-card { border-color: var(--success); }
+.q-card.wrong-card { border-color: var(--error); }
+.q-meta { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.q-num { font-size: 0.72rem; font-weight: 700; background: var(--primary); color: white; padding: 2px 8px; border-radius: 10px; }
+.q-year { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.q-year.R7 { background: #8e44ad; color:white; }
+.q-year.R6 { background: #2980b9; color:white; }
+.q-year.R5 { background: #27ae60; color:white; }
+.q-year.R4 { background: #d35400; color:white; }
+.q-year.R3 { background: #c0392b; color:white; }
+.q-cat { font-size: 0.72rem; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.q-status { margin-left: auto; font-size: 1rem; }
+.q-text { font-size: 0.85rem; line-height: 1.5; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* クイズモード */
+#quiz-view { position: relative; }
+.quiz-progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+.quiz-progress-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.3s; }
+.quiz-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.82rem; color: var(--gray); }
+.quiz-card { background: white; border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 12px; }
+.quiz-q-meta { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.quiz-q-text { font-size: 0.9rem; line-height: 1.65; margin-bottom: 16px; white-space: pre-line; }
+.choice-btn { display: block; width: 100%; text-align: left; padding: 12px 14px; border-radius: 8px; border: 2px solid var(--border); background: var(--light); font-size: 0.85rem; line-height: 1.5; cursor: pointer; margin-bottom: 8px; transition: all 0.15s; font-family: inherit; }
+.choice-btn:hover:not(:disabled) { border-color: var(--primary); background: var(--primary-light); }
+.choice-btn.selected { border-color: var(--primary); background: var(--primary-light); font-weight: 600; }
+.choice-btn.correct { border-color: var(--success); background: #eafaf1; color: #1e8449; font-weight: 700; }
+.choice-btn.wrong { border-color: var(--error); background: #fdedec; color: #922b21; }
+.choice-btn:disabled { cursor: default; }
+.answer-panel { display: none; background: white; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); margin-bottom: 12px; border-left: 4px solid var(--primary); }
+.answer-panel.show { display: block; }
+.answer-panel.correct { border-left-color: var(--success); }
+.answer-panel.wrong { border-left-color: var(--error); }
+.answer-result { font-size: 1rem; font-weight: 800; margin-bottom: 8px; }
+.answer-result.correct { color: var(--success); }
+.answer-result.wrong { color: var(--error); }
+.answer-explain { font-size: 0.82rem; line-height: 1.6; color: #444; }
+.quiz-nav { display: flex; gap: 8px; }
+.btn { padding: 12px 20px; border-radius: 8px; border: none; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.btn-primary { background: var(--primary); color: white; flex: 1; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--light); color: var(--gray); border: 2px solid var(--border); }
+.btn-secondary:hover { border-color: var(--gray); }
+.btn-accent { background: var(--accent); color: white; }
+.btn-accent:hover { background: #d35400; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+/* カテゴリー一覧 */
+.cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
+.cat-card { background: white; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+.cat-card:hover { border-color: var(--primary); transform: translateY(-1px); }
+.cat-icon { font-size: 1.6rem; margin-bottom: 6px; }
+.cat-name { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.cat-count { font-size: 0.72rem; color: var(--gray); }
+.cat-prog { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.cat-prog-fill { height: 100%; background: var(--primary); border-radius: 2px; }
+
+/* 空状態 */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--gray); }
+.empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.88rem; }
+
+/* スコアサマリー */
+.score-card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); text-align: center; margin-bottom: 12px; }
+.score-big { font-size: 3.5rem; font-weight: 900; color: var(--primary); }
+.score-sub { font-size: 0.88rem; color: var(--gray); margin-top: 4px; }
+.score-detail { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
+.score-item { padding: 10px; border-radius: 8px; background: var(--light); }
+.score-item-num { font-size: 1.4rem; font-weight: 800; }
+.score-item-label { font-size: 0.72rem; color: var(--gray); }
+
+/* レスポンシブ */
+@media (max-width: 480px) {
+  .header h1 { font-size: 0.95rem; }
+  .cat-grid { grid-template-columns: repeat(2, 1fr); }
+  .quiz-q-text { font-size: 0.85rem; }
+}
+
+/* 報告ボタン */
+.report-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; font-size: 0.72rem; font-weight: 600;
+  border: 1px solid #e0a800; border-radius: 20px;
+  background: #fffbe6; color: #b8860b;
+  cursor: pointer; transition: all 0.15s;
+}
+.report-btn:hover { background: #fff3b0; border-color: #c9a200; }
+.report-area { text-align: right; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏗 技術士一次試験 建設部門 過去問</h1>
+  <p>専門科目（択一式）過去5年分 ｜ スマホ対応</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('home',this)">📋 問題一覧</button>
+  <button class="tab-btn" onclick="switchTab('quiz',this)">✏️ クイズ</button>
+  <button class="tab-btn" onclick="switchTab('category',this)">📚 分野別</button>
+  <button class="tab-btn" onclick="switchTab('stats',this)">📊 進捗</button>
+</div>
+
+<div class="main">
+
+  <!-- 問題一覧 -->
+  <div id="home-view" class="view active">
+    <div class="filter-section">
+      <div class="filter-title">年度で絞り込み</div>
+      <div class="filter-chips" id="year-chips">
+        <div class="chip year-chip year-R7 active" data-year="all" onclick="filterYear('all', this)">全年度</div>
+        <div class="chip year-chip year-R7" data-year="R7" onclick="filterYear('R7', this)">R7（2025）</div>
+        <div class="chip year-chip year-R6" data-year="R6" onclick="filterYear('R6', this)">R6（2024）</div>
+        <div class="chip year-chip year-R5" data-year="R5" onclick="filterYear('R5', this)">R5（2023）</div>
+        <div class="chip year-chip year-R4" data-year="R4" onclick="filterYear('R4', this)">R4（2022）</div>
+        <div class="chip year-chip year-R3" data-year="R3" onclick="filterYear('R3', this)">R3（2021）</div>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">分野で絞り込み</div>
+      <div class="filter-chips" id="cat-chips"></div>
+    </div>
+    <div class="q-list" id="q-list"></div>
+  </div>
+
+  <!-- クイズ -->
+  <div id="quiz-view" class="view">
+    <div id="quiz-setup">
+      <div class="filter-section">
+        <div class="filter-title">出題年度</div>
+        <div class="filter-chips" id="quiz-year-chips">
+          <div class="chip year-chip year-R7 active" data-year="all" onclick="quizFilterYear('all',this)">全年度</div>
+          <div class="chip year-chip year-R7" data-year="R7" onclick="quizFilterYear('R7',this)">R7</div>
+          <div class="chip year-chip year-R6" data-year="R6" onclick="quizFilterYear('R6',this)">R6</div>
+          <div class="chip year-chip year-R5" data-year="R5" onclick="quizFilterYear('R5',this)">R5</div>
+          <div class="chip year-chip year-R4" data-year="R4" onclick="quizFilterYear('R4',this)">R4</div>
+          <div class="chip year-chip year-R3" data-year="R3" onclick="quizFilterYear('R3',this)">R3</div>
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title">出題分野</div>
+        <div class="filter-chips" id="quiz-cat-chips"></div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title">出題設定</div>
+        <div class="filter-chips">
+          <div class="chip active" id="order-chip-random" onclick="setOrder('random',this)">🔀 ランダム</div>
+          <div class="chip" id="order-chip-seq" onclick="setOrder('seq',this)">📋 順番通り</div>
+          <div class="chip active" id="wrong-chip" onclick="toggleWrongOnly(this)">❌ 間違えた問題のみ OFF</div>
+        </div>
+        <div style="margin-top:10px; font-size:0.82rem; color:var(--gray)" id="quiz-count-label">全問題: 0問</div>
+      </div>
+      <button class="btn btn-primary" onclick="startQuiz()" style="width:100%; padding:14px;">🚀 クイズ開始</button>
+    </div>
+    <div id="quiz-running" style="display:none">
+      <div class="quiz-info">
+        <span id="quiz-counter"></span>
+        <span id="quiz-score-live"></span>
+      </div>
+      <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill"></div></div>
+      <div class="quiz-card">
+        <div class="quiz-q-meta" id="quiz-q-meta"></div>
+        <div class="quiz-q-text" id="quiz-q-text"></div>
+        <div id="quiz-choices"></div>
+      </div>
+      <div class="answer-panel" id="answer-panel">
+        <div class="answer-result" id="answer-result"></div>
+        <div class="answer-explain" id="answer-explain"></div>
+        <div class="report-area" id="report-area"></div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn btn-secondary" onclick="endQuiz()">終了</button>
+        <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>次の問題 →</button>
+      </div>
+    </div>
+    <div id="quiz-result" style="display:none">
+      <div class="score-card">
+        <div style="font-size:0.9rem;color:var(--gray);margin-bottom:8px">クイズ結果</div>
+        <div class="score-big" id="result-pct"></div>
+        <div class="score-sub" id="result-sub"></div>
+        <div class="score-detail">
+          <div class="score-item"><div class="score-item-num" style="color:var(--success)" id="result-correct"></div><div class="score-item-label">正解</div></div>
+          <div class="score-item"><div class="score-item-num" style="color:var(--error)" id="result-wrong"></div><div class="score-item-label">不正解</div></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" style="flex:1" onclick="showQuizSetup()">設定に戻る</button>
+        <button class="btn btn-accent" style="flex:1" onclick="restartQuiz()">🔄 もう一度</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分野別 -->
+  <div id="category-view" class="view">
+    <div class="cat-grid" id="cat-grid"></div>
+  </div>
+
+  <!-- 進捗 -->
+  <div id="stats-view" class="view">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">総問題数</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--success)" id="stat-correct">0</div><div class="stat-label">正解数</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--error)" id="stat-wrong">0</div><div class="stat-label">不正解数</div></div>
+    </div>
+    <div class="score-card">
+      <div style="font-size:0.88rem;color:var(--gray);margin-bottom:8px">全体正解率</div>
+      <div class="score-big" id="stat-pct">-</div>
+    </div>
+    <div id="stat-by-year" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <button class="btn btn-secondary" style="width:100%;margin-top:12px" onclick="if(confirm('進捗をリセットしますか？'))resetProgress()">🗑 進捗をリセット</button>
+  </div>
+
+</div>
+
+<script src="questions_r3.js"></script>
+<script src="questions_r4.js"></script>
+<script src="questions_r5.js"></script>
+<script src="questions_r6.js"></script>
+<script src="questions_r7.js"></script>
+<script>
+// ====== 設定（GitHub リポジトリURLを設定してください） ======
+const GITHUB_REPO = 'https://github.com/YOUR_USERNAME/YOUR_REPO';
+
+// ====== データ ======
+const CATEGORIES = [
+  {key:'土質・基礎', icon:'⛏️'},
+  {key:'構造力学', icon:'📐'},
+  {key:'鋼構造', icon:'🔩'},
+  {key:'コンクリート', icon:'🧱'},
+  {key:'都市計画', icon:'🏙️'},
+  {key:'交通工学', icon:'🚗'},
+  {key:'水理・水文', icon:'💧'},
+  {key:'河川・砂防', icon:'⛰️'},
+  {key:'砂防・地すべり', icon:'⛰️'},
+  {key:'海岸・海洋', icon:'🌊'},
+  {key:'港湾・空港', icon:'✈️'},
+  {key:'電力エネルギー', icon:'⚡'},
+  {key:'環境', icon:'🌿'},
+  {key:'道路・舗装', icon:'🛣️'},
+  {key:'鉄道', icon:'🚃'},
+  {key:'トンネル', icon:'🚇'},
+  {key:'施工管理', icon:'🏗️'},
+];
+
+// 問題データ統合
+let allQuestions = [
+  ...(typeof questionsR3!=='undefined'?questionsR3:[]),
+  ...(typeof questionsR4!=='undefined'?questionsR4:[]),
+  ...(typeof questionsR5!=='undefined'?questionsR5:[]),
+  ...(typeof questionsR6!=='undefined'?questionsR6:[]),
+  ...(typeof questionsR7!=='undefined'?questionsR7:[]),
+];
+
+// ====== 状態 ======
+let quizYear = 'all', quizCat = 'all', quizOrder = 'random', wrongOnly = false;
+let quizList = [], quizIdx = 0, quizCorrect = 0, quizAnswered = false;
+let progress = {};
+
+// ====== 進捗ストレージ ======
+function loadProgress() {
+  try { progress = JSON.parse(localStorage.getItem('pe_progress') || '{}'); } catch(e) { progress = {}; }
+}
+function saveProgress() {
+  try { localStorage.setItem('pe_progress', JSON.stringify(progress)); } catch(e) {}
+}
+function resetProgress() {
+  progress = {}; saveProgress(); renderAll();
+}
+function markAnswer(id, correct) {
+  if (!progress[id]) progress[id] = {attempts:0, correct:0};
+  progress[id].attempts++;
+  if (correct) progress[id].correct++;
+  saveProgress();
+}
+
+// ====== ヘルパー ======
+// year フィールドが数値(R3=3)の場合も文字列(R6="R6")の場合も "R3"/"R6" に統一
+function getYearCode(q) {
+  return typeof q.year === 'number' ? 'R' + q.year : q.year;
+}
+// バッジ表示テキスト（常に "R3"〜"R7" 形式）
+function getYearLabel(q) {
+  const code = getYearCode(q);
+  const map = {R7:'R7', R6:'R6', R5:'R5', R4:'R4', R3:'R3'};
+  return map[code] || q.yearLabel;
+}
+
+// ====== フィルター ======
+let homeYearFilter = 'all', homeCatFilter = 'all';
+
+function filterYear(y, el) {
+  homeYearFilter = y;
+  document.querySelectorAll('#year-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderQList();
+}
+function filterCatClick(cat, el) {
+  homeCatFilter = cat;
+  document.querySelectorAll('#cat-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderQList();
+}
+function quizFilterYear(y, el) {
+  quizYear = y;
+  document.querySelectorAll('#quiz-year-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  updateQuizCount();
+}
+function quizFilterCat(cat, el) {
+  quizCat = cat;
+  document.querySelectorAll('#quiz-cat-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  updateQuizCount();
+}
+function setOrder(o, el) {
+  quizOrder = o;
+  document.getElementById('order-chip-random').classList.toggle('active', o==='random');
+  document.getElementById('order-chip-seq').classList.toggle('active', o==='seq');
+}
+function toggleWrongOnly(el) {
+  wrongOnly = !wrongOnly;
+  el.textContent = wrongOnly ? '❌ 間違えた問題のみ ON' : '❌ 間違えた問題のみ OFF';
+  el.classList.toggle('active', wrongOnly);
+  updateQuizCount();
+}
+
+function getFilteredQ() {
+  return allQuestions.filter(q => {
+    if (homeYearFilter !== 'all' && getYearCode(q) !== homeYearFilter) return false;
+    if (homeCatFilter !== 'all' && q.category !== homeCatFilter) return false;
+    return true;
+  });
+}
+function getQuizQ() {
+  return allQuestions.filter(q => {
+    if (quizYear !== 'all' && getYearCode(q) !== quizYear) return false;
+    if (quizCat !== 'all' && q.category !== quizCat) return false;
+    if (wrongOnly) {
+      const p = progress[q.id];
+      if (!p || p.attempts === 0) return false;
+      if (p.correct === p.attempts) return false;
+    }
+    return true;
+  });
+}
+
+function updateQuizCount() {
+  const qs = getQuizQ();
+  document.getElementById('quiz-count-label').textContent = `出題対象: ${qs.length}問`;
+}
+
+// ====== レンダリング ======
+function renderCatChips(containerId, clickFn) {
+  const cats = [...new Set(allQuestions.map(q => q.category))];
+  const container = document.getElementById(containerId);
+  container.innerHTML = `<div class="chip active" onclick="${clickFn}('all',this)">全分野</div>` +
+    cats.map(c => {
+      const ci = CATEGORIES.find(x => x.key === c);
+      return `<div class="chip" onclick="${clickFn}('${c}',this)">${ci?ci.icon:''} ${c}</div>`;
+    }).join('');
+}
+
+function renderQList() {
+  const qs = getFilteredQ();
+  const container = document.getElementById('q-list');
+  if (qs.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>該当する問題がありません</p></div>`;
+    return;
+  }
+  container.innerHTML = qs.map(q => {
+    const p = progress[q.id];
+    const status = p ? (p.correct > 0 && p.correct === p.attempts ? '✅' : p.attempts > 0 ? '❌' : '') : '';
+    const cls = p ? (p.correct > 0 && p.correct === p.attempts ? 'correct-card' : p.attempts > 0 ? 'wrong-card' : '') : '';
+    return `<div class="q-card ${cls}" onclick="openQuestion('${q.id}')">
+      <div class="q-meta">
+        <span class="q-num">Ⅲ-${q.number}</span>
+        <span class="q-year ${getYearCode(q)}">${getYearLabel(q)}</span>
+        <span class="q-cat">${q.category}</span>
+        <span class="q-status">${status}</span>
+      </div>
+      <div class="q-text">${q.question.replace(/\n/g,' ')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = CATEGORIES.map(cat => {
+    const qs = allQuestions.filter(q => q.category === cat.key);
+    if (qs.length === 0) return '';
+    const done = qs.filter(q => progress[q.id] && progress[q.id].attempts > 0).length;
+    const correct = qs.filter(q => progress[q.id] && progress[q.id].correct > 0).length;
+    const pct = qs.length > 0 ? Math.round(done / qs.length * 100) : 0;
+    return `<div class="cat-card" onclick="startCategoryQuiz('${cat.key}')">
+      <div class="cat-icon">${cat.icon}</div>
+      <div class="cat-name">${cat.key}</div>
+      <div class="cat-count">${qs.length}問 / 正解${correct}問</div>
+      <div class="cat-prog"><div class="cat-prog-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  const total = allQuestions.length;
+  const attempted = allQuestions.filter(q => progress[q.id] && progress[q.id].attempts > 0).length;
+  const correct = allQuestions.filter(q => progress[q.id] && progress[q.id].correct > 0).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = attempted - correct;
+  document.getElementById('stat-pct').textContent = attempted > 0 ? Math.round(correct/attempted*100) + '%' : '-';
+
+  const years = [...new Set(allQuestions.map(q=>q.year))].sort();
+  const byYear = document.getElementById('stat-by-year');
+  byYear.innerHTML = years.map(y => {
+    const qs = allQuestions.filter(q=>q.year===y);
+    const c = qs.filter(q=>progress[q.id]&&progress[q.id].correct>0).length;
+    const a = qs.filter(q=>progress[q.id]&&progress[q.id].attempts>0).length;
+    const yearLabels = {R7:'令和7年度',R6:'令和6年度',R5:'令和5年度',R4:'令和4年度',R3:'令和3年度'};
+    return `<div class="stat-card" style="text-align:left;display:flex;justify-content:space-between;align-items:center">
+      <div><span class="q-year ${y}" style="font-size:0.78rem;padding:2px 8px;border-radius:10px;font-weight:700;display:inline-block;margin-bottom:4px">${yearLabels[y]||y}</span><div style="font-size:0.78rem;color:var(--gray)">${qs.length}問中 ${a}問回答</div></div>
+      <div style="font-size:1.4rem;font-weight:800;color:var(--primary)">${a>0?Math.round(c/a*100)+'%':'-'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAll() {
+  renderCatChips('cat-chips', 'filterCatClick');
+  renderCatChips('quiz-cat-chips', 'quizFilterCat');
+  renderQList();
+  renderCatGrid();
+  renderStats();
+  updateQuizCount();
+}
+
+// ====== タブ切替 ======
+function switchTab(tab, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab+'-view').classList.add('active');
+  if (el) el.classList.add('active');
+  if (tab === 'stats') renderStats();
+  if (tab === 'category') renderCatGrid();
+}
+
+// ====== 問題詳細（モーダル風） ======
+function openQuestion(id) {
+  const q = allQuestions.find(x => x.id === id);
+  if (!q) return;
+  // クイズの1問モードで開く
+  quizList = [q];
+  quizIdx = 0; quizCorrect = 0; quizAnswered = false;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===1));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('quiz-view').classList.add('active');
+  document.getElementById('quiz-setup').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-running').style.display = 'block';
+  renderQuizQuestion();
+}
+
+// ====== クイズ ======
+function startQuiz() {
+  let qs = getQuizQ();
+  if (qs.length === 0) { alert('出題する問題がありません。フィルターを変更してください。'); return; }
+  if (quizOrder === 'random') qs = qs.sort(() => Math.random() - 0.5);
+  quizList = qs;
+  quizIdx = 0; quizCorrect = 0; quizAnswered = false;
+  document.getElementById('quiz-setup').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-running').style.display = 'block';
+  renderQuizQuestion();
+}
+
+function startCategoryQuiz(cat) {
+  quizCat = cat; quizYear = 'all'; wrongOnly = false; quizOrder = 'random';
+  switchTab('quiz');
+  let qs = allQuestions.filter(q => q.category === cat).sort(() => Math.random() - 0.5);
+  if (qs.length === 0) return;
+  quizList = qs; quizIdx = 0; quizCorrect = 0; quizAnswered = false;
+  document.getElementById('quiz-setup').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-running').style.display = 'block';
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const q = quizList[quizIdx];
+  const total = quizList.length;
+  document.getElementById('quiz-counter').textContent = `${quizIdx+1} / ${total}問`;
+  document.getElementById('quiz-score-live').textContent = `✅ ${quizCorrect} / ${quizIdx}`;
+  document.getElementById('quiz-progress-fill').style.width = `${(quizIdx/total)*100}%`;
+
+  const ci = CATEGORIES.find(x => x.key === q.category);
+  document.getElementById('quiz-q-meta').innerHTML =
+    `<span class="q-num">Ⅲ-${q.number}</span>
+     <span class="q-year ${getYearCode(q)}">${getYearLabel(q)}</span>
+     <span class="q-cat">${ci?ci.icon:''} ${q.category}</span>`;
+  document.getElementById('quiz-q-text').textContent = q.question;
+
+  const choicesHtml = q.choices.map((c, i) =>
+    `<button class="choice-btn" onclick="selectAnswer(${i})">${c}</button>`
+  ).join('');
+  document.getElementById('quiz-choices').innerHTML = choicesHtml;
+
+  document.getElementById('answer-panel').className = 'answer-panel';
+  document.getElementById('next-btn').disabled = true;
+  quizAnswered = false;
+}
+
+function selectAnswer(idx) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = quizList[quizIdx];
+  const correct = idx === q.answer;
+
+  document.querySelectorAll('.choice-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add('correct');
+    if (i === idx && !correct) btn.classList.add('wrong');
+    if (i === idx) btn.classList.add('selected');
+  });
+
+  const panel = document.getElementById('answer-panel');
+  panel.className = 'answer-panel show ' + (correct ? 'correct' : 'wrong');
+  document.getElementById('answer-result').className = 'answer-result ' + (correct ? 'correct' : 'wrong');
+  document.getElementById('answer-result').textContent = correct ? '✅ 正解！' : '❌ 不正解';
+  document.getElementById('answer-explain').textContent = q.explanation || '解説は準備中です。';
+  document.getElementById('report-area').innerHTML =
+    `<button class="report-btn" onclick="reportQuestion('${q.id}')">⚠️ この問題を報告</button>`;
+
+  if (correct) quizCorrect++;
+  document.getElementById('quiz-score-live').textContent = `✅ ${quizCorrect} / ${quizIdx+1}`;
+  document.getElementById('next-btn').disabled = false;
+
+  markAnswer(q.id, correct);
+  renderCatGrid();
+}
+
+function nextQuestion() {
+  quizIdx++;
+  if (quizIdx >= quizList.length) {
+    showResult();
+  } else {
+    document.getElementById('answer-panel').className = 'answer-panel';
+    renderQuizQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-running').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'block';
+  const total = quizList.length;
+  const pct = Math.round(quizCorrect / total * 100);
+  document.getElementById('result-pct').textContent = pct + '%';
+  document.getElementById('result-sub').textContent = `${total}問中 ${quizCorrect}問正解`;
+  document.getElementById('result-correct').textContent = quizCorrect;
+  document.getElementById('result-wrong').textContent = total - quizCorrect;
+  renderStats();
+}
+
+function endQuiz() { showQuizSetup(); }
+function showQuizSetup() {
+  document.getElementById('quiz-running').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-setup').style.display = 'block';
+  updateQuizCount();
+}
+function restartQuiz() {
+  document.getElementById('quiz-result').style.display = 'none';
+  startQuiz();
+}
+
+// ====== 問題報告（GitHub Issues連携） ======
+function reportQuestion(id) {
+  const q = allQuestions.find(x => x.id === id);
+  if (!q) return;
+
+  const choicesText = q.choices
+    .map((c, i) => `  ${i+1}. ${c}`)
+    .join('\n');
+
+  const title = `[問題報告] ${getYearLabel(q)} Ⅲ-${q.number}（${q.category}）`;
+  const body =
+`## 報告する問題
+
+| 項目 | 内容 |
+|------|------|
+| 年度 | ${getYearLabel(q)} |
+| 問題番号 | Ⅲ-${q.number} |
+| 分野 | ${q.category} |
+| 問題ID | ${q.id} |
+
+## 問題文
+${q.question}
+
+## 選択肢
+${choicesText}
+
+## 現在の正解（アプリ設定値）
+選択肢 **${q.answer + 1}番**
+
+---
+## 報告内容
+<!-- ここに問題点を記入してください（例：正解が違う、問題文に誤りがある、解説が不正確など） -->
+
+`;
+
+  const url = `${GITHUB_REPO}/issues/new`
+    + `?title=${encodeURIComponent(title)}`
+    + `&body=${encodeURIComponent(body)}`
+    + `&labels=question-report`;
+
+  window.open(url, '_blank');
+}
+
+// ====== 初期化 ======
+loadProgress();
+renderAll();
+</script>
+</body>
+</html>
