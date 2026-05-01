@@ -620,6 +620,7 @@ function nextQuestion() {
   } else {
     document.getElementById('answer-panel').className = 'answer-panel';
     renderQuizQuestion();
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
 }
 
